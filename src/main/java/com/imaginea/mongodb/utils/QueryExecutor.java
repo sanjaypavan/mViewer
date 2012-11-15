@@ -80,7 +80,9 @@ public class QueryExecutor {
             String key = (String) queryObj.removeField("distinct");
             distinctValuesList = dbCollection.distinct(key, queryObj);
         } else {
-            distinctValuesList = dbCollection.distinct(queryStr);
+            //distinctValuesList = dbCollection.distinct(queryStr);
+            distinctValuesList = dbCollection.distinct("name");
+
         }
         JSONObject result = new JSONObject();
         result.put("documents", distinctValuesList);

@@ -22,8 +22,8 @@ YUI({
     function handleHeaderOption(eventObject) {
         var menuOpt = eventObject.currentTarget.get("id");
         MV.toggleClass(eventObject.currentTarget, Y.all(".nav-cont li a"));
-        _clearContents(MV.mainBody);
-        MV.hideQueryForm();
+        //_clearContents(MV.mainBody);
+        //MV.hideQueryForm();
         if (menuOpt === "home") {
             window.location = "home.html?connectionId=" + MV.StateManager.connectionId();
         } else if (menuOpt === "serverStats") {
@@ -31,13 +31,13 @@ YUI({
 	        MV.header.addClass('tab-cont');
             MV.header.set("innerHTML", "Server Statistics");
         } else if (menuOpt === 'graphs') {
-            _clearContents(MV.header);
+           // _clearContents(MV.header);
             window.open(MV.URLMap.graphs(), '_newtab');
         } else if (menuOpt === 'help') {
-            _clearContents(MV.header);
+            //_clearContents(MV.header);
             window.open(MV.URLMap.help(), '_newtab');
         } else if (menuOpt === 'troubleshoot') {
-            _clearContents(MV.header);
+            //_clearContents(MV.header);
             window.open(MV.URLMap.troubleShootPage(), '_newtab');
         }
     }
@@ -95,6 +95,7 @@ YUI({
         element.set("innerHTML","");
     }
 
+    Y.delegate("click", handleHeaderOption, ".user-menu", "li a");
     Y.delegate("click", handleHeaderOption, ".nav-cont", "li a");
     Y.on("click", disconnect, "#disconnect");
 });

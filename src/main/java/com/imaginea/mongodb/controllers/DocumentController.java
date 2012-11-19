@@ -20,30 +20,22 @@ import com.imaginea.mongodb.exceptions.DocumentException;
 import com.imaginea.mongodb.exceptions.ErrorCodes;
 import com.imaginea.mongodb.services.DocumentService;
 import com.imaginea.mongodb.services.impl.DocumentServiceImpl;
+import com.imaginea.mongodb.utils.JSON;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
-import com.mongodb.util.JSON;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 /**
  * Defines resources for performing create/delete/update operations on documents
@@ -74,48 +66,48 @@ public class DocumentController extends BaseController {
      *
      * @param dbName         Name of Database
      * @param collectionName Name of Collection
-     * @param connectionId         Mongo Db Configuration provided by user to connect to.
+     * @param connectionId   Mongo Db Configuration provided by user to connect to.
      * @param request        Get the HTTP request context to extract session parameters
      * @return A String of JSON format with list of All Documents in a
      *         collection.
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public String executeQuery(@PathParam("dbName") final String dbName, @PathParam("collectionName") final String collectionName, @QueryParam("query") final String query,
-                                     @QueryParam("connectionId") final String connectionId, @QueryParam("fields") String keys, @QueryParam("limit") final String limit, @QueryParam("skip") final String skip,
-                                     @Context final HttpServletRequest request) throws JSONException {
+    public String executeQuery(@PathParam("dbName") final String dbName,
+                               @PathParam("collectionName") final String collectionName,
+                               @QueryParam("query") final String query,
+                               @QueryParam("connectionId") final String connectionId,
+                               @QueryParam("fields") final String fields,
+                               @QueryParam("limit") final String limit,
+                               @QueryParam("skip") final String skip,
+                               @QueryParam("sortBy") final String sortBy,
+                               @Context final HttpServletRequest request) throws JSONException {
 
-        // Get all fields with "_id" in case of keys = null
-        if (keys == null) {
-            keys = "";
-        }
-        final String fields = keys;
-
-        String response = new ResponseTemplate().execute(logger, connectionId, request, new ResponseCallback() {
-            public Object execute() throws Exception {
-
-                DocumentService documentService = new DocumentServiceImpl(connectionId);
-                // Get query
-                int startIndex = query.indexOf("("), endIndex = query.lastIndexOf(")");
-                String cmdStr = query.substring(0, startIndex);
-                String tokens[] = cmdStr.split("\\.");
-                String collection = null, command = null;
-                if (tokens.length == 3) {
-                    collection = tokens[1];
-                    command = tokens[2];
-                } else if(tokens.length == 4) {
-                    collection = tokens[1] + '.' + tokens[2];
-                    command = tokens[3];
-                } else {
-                    command = tokens[1];
-                }
-                String jsonStr = query.substring(startIndex + 1, endIndex);
-                int docsLimit = Integer.parseInt(limit);
-                int docsSkip = Integer.parseInt(skip);
-                JSONObject result = documentService.getQueriedDocsList(dbName, collection, command, jsonStr, fields, docsLimit, docsSkip);
-                return result;
-            }
-        });
+        String response = new ResponseTemplate().execute(logger, connectionId, request,
+                new ResponseCallback() {
+                    public Object execute() throws Exception {
+                        DocumentService documentService = new DocumentServiceImpl(connectionId);
+                        // Get query
+                        int startIndex = query.indexOf("("), endIndex = query.lastIndexOf(")");
+                        String cmdStr = query.substring(0, startIndex);
+                        String tokens[] = cmdStr.split("\\.");
+                        String collection = null, command = null;
+                        if (tokens.length == 3) {
+                            collection = tokens[1];
+                            command = tokens[2];
+                        } else if (tokens.length == 4) {
+                            collection = tokens[1] + '.' + tokens[2];
+                            command = tokens[3];
+                        } else {
+                            command = tokens[1];
+                        }
+                        String jsonStr = query.substring(startIndex + 1, endIndex);
+                        int docsLimit = Integer.parseInt(limit);
+                        int docsSkip = Integer.parseInt(skip);
+                        JSONObject result = documentService.getQueriedDocsList(dbName, collection, command, jsonStr, fields, sortBy, docsLimit, docsSkip);
+                        return result;
+                    }
+                });
 
         return response;
     }
@@ -128,7 +120,7 @@ public class DocumentController extends BaseController {
      *
      * @param dbName         Name of Database
      * @param collectionName Name of Collection
-     * @param connectionId         Mongo Db Configuration provided by user to connect to.
+     * @param connectionId   Mongo Db Configuration provided by user to connect to.
      * @param request        Get the HTTP request context to extract session parameters
      * @return A String of JSON format with all keys in a collection.
      */
@@ -198,7 +190,7 @@ public class DocumentController extends BaseController {
      * @param keys           new Document values in case of update
      * @param action         Query Paramater with value PUT for identifying a create
      *                       database request and value DELETE for dropping a database.
-     * @param connectionId         Mongo Db Configuration provided by user to connect to.
+     * @param connectionId   Mongo Db Configuration provided by user to connect to.
      * @param request        Get the HTTP request context to extract session parameters
      * @return String with Status of operation performed.
      */

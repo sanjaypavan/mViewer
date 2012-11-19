@@ -22,8 +22,8 @@ YUI.add('upload-dialog', function(Y) {
 
 	MV.showUploadDialog = function(form) {
 		var newFilesUploaded = false;
-		
-		YAHOO.util.Dom.removeClass(form, "yui-pe-content");		
+
+		YAHOO.util.Dom.removeClass(form, "yui-pe-content");
 
 		var uploadDialog = new YAHOO.widget.SimpleDialog(form, {
 			width: "40em",
@@ -53,7 +53,7 @@ YUI.add('upload-dialog', function(Y) {
 				}, 250);
 			}
 		};
-		
+
 		uploadDialog.setHeader("File Upload");
 		uploadDialog.render();
 		uploadDialog.show();
@@ -104,10 +104,10 @@ YUI.add('upload-dialog', function(Y) {
                         }
                     );
                 }
-	            newFilesUploaded = true;	            
+	            newFilesUploaded = true;
             }
 		});
-		
+
 		// Clear table body
 		$('#fileupload-body').empty();
 	}

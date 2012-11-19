@@ -15,19 +15,13 @@
  */
 package com.imaginea.mongodb.controllers;
 
-import com.imaginea.mongodb.exceptions.ApplicationException;
-import com.imaginea.mongodb.exceptions.CollectionException;
-import com.imaginea.mongodb.exceptions.DatabaseException;
-import com.imaginea.mongodb.exceptions.DocumentException;
-import com.imaginea.mongodb.exceptions.ErrorCodes;
-import com.imaginea.mongodb.exceptions.InvalidHTTPRequestException;
-import com.imaginea.mongodb.exceptions.MongoHostUnknownException;
-import com.imaginea.mongodb.exceptions.ValidationException;
+import com.imaginea.mongodb.exceptions.*;
 import com.imaginea.mongodb.services.AuthService;
 import com.imaginea.mongodb.services.impl.AuthServiceImpl;
 import com.imaginea.mongodb.utils.ApplicationUtils;
 import com.mongodb.MongoException;
 import com.mongodb.MongoInternalException;
+import com.mongodb.util.JSONParseException;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -87,14 +81,13 @@ public class BaseController {
      * @return JSON Error response.
      */
     protected static String formErrorResponse(Logger logger, ApplicationException e) {
-
         String response = null;
         JSONObject jsonErrorResponse = new JSONObject();
         JSONObject error = new JSONObject();
         try {
             error.put("message", e.getMessage());
             error.put("code", e.getErrorCode());
-            logger.error(error);
+            logger.error(error, e);
 
             JSONObject tempResponse = new JSONObject();
             tempResponse.put("error", error);
@@ -138,6 +131,9 @@ public class BaseController {
                 } else if (dispatcherResponse instanceof String) {
                     response = dispatcherResponse.toString();
                 }
+            } catch (JSONParseException m) {
+                ApplicationException e = new ApplicationException(ErrorCodes.JSON_EXCEPTION, "Invalid JSON Object", m.getCause());
+                response = formErrorResponse(logger, e);
             } catch (NumberFormatException m) {
                 ApplicationException e = new ApplicationException(ErrorCodes.ERROR_PARSING_PORT, "Invalid Port", m.getCause());
                 response = formErrorResponse(logger, e);
@@ -166,7 +162,7 @@ public class BaseController {
             } catch (ApplicationException e) {
                 response = formErrorResponse(logger, e);
             } catch (Exception m) {
-                ApplicationException e = new ApplicationException(ErrorCodes.ANY_OTHER_EXCEPTION, m.getMessage(), m.getCause());
+                ApplicationException e = new ApplicationException(ErrorCodes.ANY_OTHER_EXCEPTION, m.getMessage(), m);
                 response = formErrorResponse(logger, e);
             }
             return response;

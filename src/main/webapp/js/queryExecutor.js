@@ -164,7 +164,7 @@ YUI.add('query-executor', function(Y) {
         var lowerPartTemplate = [
             "<div id='parametersDiv'>",
             "<label for='skip'> Skip(No. of records) </label><br/><input id='skip' type='text' name='skip' value='0'/><br/>",
-            "<label for='limit'> Max page size: </label><br/><span><select id='limit' name='limit'><option value='10'>10</option><option value='25'>25</option><option value='50'>50</option></select></span><br/>  ",
+            "<label for='limit'> Max page size: </label><br/><select id='maxPageSize' name='limit'><option value='10'>10</option><option value='25'>25</option><option value='50'>50</option></select><br/>  ",
             "<label for='sort'> Sort by fields </label><br/><input id='sort' type='text' name='sort' value='_id:1'/><br/><br/>",
             "<button id='execQueryButton' class='bttn'>Execute Query</button>",
             "</div>"
@@ -206,7 +206,7 @@ YUI.add('query-executor', function(Y) {
                 if (eventObject.ctrlKey && eventObject.keyCode === 13) {
                     Y.one('#execQueryButton').simulate('click');
                 }
-            }, "#limit");
+            }, "#maxPageSize");
         }
 
         function handleSelect(event) {
@@ -228,7 +228,7 @@ YUI.add('query-executor', function(Y) {
             if (href == null || href == undefined || href == "")
                 return;
             var id = event.currentTarget.get("id");
-            var skip = Y.one('#skip'), limit = Y.one('#limit'), count = Y.one('#countLabel');
+            var skip = Y.one('#skip'), limit = Y.one('#maxPageSize'), count = Y.one('#countLabel');
             var skipValue = parseInt(skip.get('value')), limitValue = parseInt(limit.get('value')), countValue = parseInt(count.get('text'));
             if (id === "first") {
                 skip.set('value', 0);
@@ -246,7 +246,7 @@ YUI.add('query-executor', function(Y) {
         function updateAnchors(count, showPaginated) {
             var first = Y.one('#first'), prev = Y.one('#prev'), next = Y.one('#next'), last = Y.one('#last');
             var start = Y.one('#startLabel'), end = Y.one('#endLabel'), countLabel = Y.one('#countLabel');
-            var skip = parseInt(Y.one('#skip').get('value')), limit = parseInt(Y.one('#limit').get('value'));
+            var skip = parseInt(Y.one('#skip').get('value')), limit = parseInt(Y.one('#maxPageSize').get('value'));
             if (skip == 0 || !showPaginated)
                 disableAnchor(first);
             else
@@ -288,7 +288,7 @@ YUI.add('query-executor', function(Y) {
          */
         function getQueryParameters() {
             var parsedQuery, query = Y.one('#queryBox').get("value").trim(),
-                limit = Y.one('#limit').get("value"),
+                limit = Y.one('#maxPageSize').get("value"),
                 skip = Y.one('#skip').get("value").trim(),
                 fields = Y.all('#fields input'),
                 sortBy = "{" + Y.one('#sort').get("value") + "}",

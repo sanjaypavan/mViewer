@@ -108,14 +108,11 @@
                 };
                 var findParentTR = function() {
                     var relevantParent = null;
+                    var trSelectionClass = 'selected';
                     if (document.activeElement) {
                         var yNode = Y.one(document.activeElement);
                         if (yNode.hasClass('non-navigable')) {
-                            relevantParent = findParent(yNode, 'tr');
-                            // in case the tr contains a save button, skip
-                            if (relevantParent.one("* .savebtn") !== null) {
-                                relevantParent = null;
-                            }
+                            relevantParent = findParent(yNode, '.docDiv');
                         }
                     }
                     return relevantParent;
@@ -127,11 +124,32 @@
                     switch (eventObject.keyCode) {
                     case arrowKeys.down:
                         parentTR = findParentTR();
-                        effectTR = (parentTR) ? parentTR.next() : null;
+                        effectTR = (parentTR) ? parentTR.next(): null;
+                        if(sm.currentColl() == MV.indexes){
+                            while(parentTR.next()){
+                                effectTR = null;
+                                if(parentTR.next().one('button.deletebtn')){
+                                    effectTR = parentTR.next();
+                                    break;
+                                }
+                                parentTR = parentTR.next();
+                            }
+                        }
+
                         break;
                     case arrowKeys.up:
                         parentTR = findParentTR();
                         effectTR = (parentTR) ? parentTR.previous() : null;
+                        if(sm.currentColl() == MV.indexes){
+                            while(parentTR.previous()){
+                                effectTR = null;
+                                if(parentTR.previous().one('button.deletebtn')){
+                                    effectTR = parentTR.previous();
+                                    break;
+                                }
+                                parentTR = parentTR.previous();
+                            }
+                        }
                         break;
                     }
                     if (effectTR) {
@@ -171,7 +189,7 @@
                     } else if ('DIV' === selectedNodeName) {
                         var firstChild = null;
                         if (selectedElement.hasClass('navigateTable')) {
-                            firstChild = selectedElement.one('* tr');
+                            firstChild = selectedElement.one('* div');
                             if (firstChild) {
                                 firstChild.simulate('click');
                             }

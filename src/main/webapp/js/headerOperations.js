@@ -29,6 +29,8 @@ YUI({
             if (menuOpt === "home") {
                 window.location = "home.html?connectionId=" + MV.StateManager.connectionId();
             } else if (menuOpt === "serverStats") {
+                _clearContents(MV.mainBody);
+                MV.hideQueryForm();
                 showServerStats();
                 MV.header.addClass('tab-cont');
                 MV.header.set("innerHTML", "Server Statistics");
@@ -65,6 +67,9 @@ YUI({
             });
         }
 
+        function _clearContents(element) {
+            element.set("innerHTML","");
+        }
         function disconnect(eventObject) {
             Y.io(MV.URLMap.disconnect(), {
                 method: "GET",

@@ -113,24 +113,28 @@ YUI({
 		for (i = 0; i < documents.length; i++) {
 			fitToContent(500, document.getElementById("ta" + i));
 		}
-		var trSelectionClass = 'selected';
-		// add click listener to select and deselect rows.
-		Y.all('.jsonTable tr').on("click", function(eventObject) {
-			var currentTR = eventObject.currentTarget;
-			var alreadySelected = currentTR.hasClass(trSelectionClass);
+        var trSelectionClass = 'selected';
+        // add click listener to select and deselect rows.
+        Y.all('.docDiv').on("click", function(eventObject) {
+            var currentTR = eventObject.currentTarget;
+            var alreadySelected =  currentTR.one('.textAreaDiv textarea').hasClass(trSelectionClass);
 
-			Y.all('.jsonTable tr').each(function(item) {
-				item.removeClass(trSelectionClass);
-			});
+            Y.all('.docDiv').each(function(item) {
+                item.removeClass(trSelectionClass);
+            });
 
-			if (!alreadySelected) {
-				currentTR.addClass(trSelectionClass);
-				var openBtn = currentTR.one('button.openbtn');
-				if (openBtn) {
-					openBtn.focus();
-				}
-			}
-		});
+            Y.all('.textAreaDiv textarea').each(function(item) {
+                item.removeClass(trSelectionClass);
+            });
+
+            if (!alreadySelected) {
+                currentTR.one('.textAreaDiv textarea').addClass(trSelectionClass);
+                var openBtn = currentTR.one('button.openbtn');
+                if (openBtn) {
+                    openBtn.focus();
+                }
+            }
+        });
 		Y.on('blur', function(eventObject) {
 			var resetAll = true;
 			// FIXME ugly hack for avoiding blur when scroll happens

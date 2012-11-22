@@ -106,8 +106,8 @@ YUI({
             ].join('\n');
 
             var nonEditableTemplate=[
-                "<div id='doc[0]' style='display: inline-block;width:99%;position: relative;'>",
-                "<div style='display: inline; float: left; width: 98%;padding: 10px;'><pre> <textarea id='ta[1]' class='disabled non-navigable' disabled='disabled' cols='74' style='width: 99%'>[2]</textarea></pre></div>",
+                "<div id='doc[0]' class='docDiv' style='display: inline-block;width:99%;position: relative;'>",
+                "<div class='textAreaDiv' style='display: inline; float: left; width: 98%;padding: 10px;'><pre> <textarea id='ta[1]' class='disabled non-navigable' disabled='disabled' cols='74' style='width: 99%'>[2]</textarea></pre></div>",
                 "<div style='display: inline; float: left;left:85%;position: absolute;top: 15%;'>",
                 "</div>",
                 "</div>"
@@ -148,19 +148,28 @@ YUI({
             }
             var trSelectionClass = 'selected';
             // add click listener to select and deselect rows.
-            Y.all('.jsonTable tr').on("click", function (eventObject) {
+            Y.all('.docDiv').on("click", function(eventObject) {
                 var currentTR = eventObject.currentTarget;
-                var alreadySelected = currentTR.hasClass(trSelectionClass);
+                var alreadySelected =  currentTR.one('.textAreaDiv textarea').hasClass(trSelectionClass);
 
-                Y.all('.jsonTable tr').each(function (item) {
+                Y.all('.docDiv').each(function(item) {
+                    item.removeClass(trSelectionClass);
+                });
+
+                Y.all('.textAreaDiv textarea').each(function(item) {
                     item.removeClass(trSelectionClass);
                 });
 
                 if (!alreadySelected) {
-                    currentTR.addClass(trSelectionClass);
                     var editBtn = currentTR.one('button.editbtn');
+                    var deleteBtn = currentTR.one('button.deletebtn');
                     if (editBtn) {
+                        currentTR.one('.textAreaDiv textarea').addClass(trSelectionClass);
                         editBtn.focus();
+                    }
+                    if (sm.currentColl() == MV.indexes && deleteBtn){
+                        currentTR.one('.textAreaDiv textarea').addClass(trSelectionClass);
+                        deleteBtn.focus();
                     }
                 }
             });
@@ -316,7 +325,6 @@ YUI({
             } else {
                 //get the sibling save/edit bttn and toggle using that
                 btnIndex = getButtonIndex(args[0].eventObj.currentTarget);
-                toggleSaveEdit(Y.one('#delete' + btnIndex).get('parentNode').one('button'), btnIndex, actionMap.save);
             }
         }
 

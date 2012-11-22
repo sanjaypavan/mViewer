@@ -246,7 +246,7 @@ YUI({
 			case 3:
 				// click to view details
 				MV.hideQueryForm();
-				MV.createDatatable(MV.URLMap.collStatistics(), Y.one("#currentColl").get("value"));
+                MV.createDatatable(MV.URLMap.collStatistics(), Y.one("#currentColl").get("value"));
 				break;
 		}
 	}
@@ -262,7 +262,7 @@ YUI({
 		Y.one("#currentBucket").set("value", label);
 		MV.toggleClass(sm.currentBucketAsNode(), Y.all("#collNames li"));
 		MV.toggleClass(sm.currentBucketAsNode(), Y.all("#bucketNames li"));
-        MV.toggleClass(sm.currentCollAsNode(), Y.all("#systemCollections li"));
+        MV.toggleClass(sm.currentBucketAsNode(), Y.all("#systemCollections li"));
 		switch (index) {
 			case 1:
 				// Add File

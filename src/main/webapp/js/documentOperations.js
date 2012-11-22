@@ -88,7 +88,7 @@ YUI({
         var jsonView = "<div class='buffer jsonBuffer navigable navigateTable' id='jsonBuffer'>";
         var trTemplate = [
             "<div class='docDiv' id='doc[0]'>",
-            "<div class='textAreaDiv'><pre><textarea id='ta[1]' class='non-navigable' disabled='disabled' cols='74'>[2]</textarea></pre></div>",
+            "<div class='textAreaDiv' class='non-navigable'><pre><textarea id='ta[1]' class='non-navigable' disabled='disabled' cols='74'>[2]</textarea></pre></div>",
             "</div>"
         ];
 
@@ -127,18 +127,22 @@ YUI({
 		}
 		var trSelectionClass = 'selected';
 		// add click listener to select and deselect rows.
-		Y.all('.jsonTable tr').on("click", function(eventObject) {
+		Y.all('.docDiv').on("click", function(eventObject) {
 			var currentTR = eventObject.currentTarget;
-			var alreadySelected = currentTR.hasClass(trSelectionClass);
+			var alreadySelected =  currentTR.one('.textAreaDiv textarea').hasClass(trSelectionClass);
 
-			Y.all('.jsonTable tr').each(function(item) {
+			Y.all('.docDiv').each(function(item) {
 				item.removeClass(trSelectionClass);
 			});
 
+            Y.all('.textAreaDiv textarea').each(function(item) {
+                item.removeClass(trSelectionClass);
+            });
+
 			if (!alreadySelected) {
-				currentTR.addClass(trSelectionClass);
+                currentTR.one('.textAreaDiv textarea').addClass(trSelectionClass);
 				var editBtn = currentTR.one('button.editbtn');
-				if (editBtn) {
+                if (editBtn) {
 					editBtn.focus();
 				}
 			}
@@ -150,7 +154,7 @@ YUI({
 				resetAll = false;
 			}
 			if (resetAll) {
-				Y.all('tr.selected').each(function(item) {
+				Y.all('div.selected').each(function(item) {
 					item.removeClass(trSelectionClass);
 				});
 			}

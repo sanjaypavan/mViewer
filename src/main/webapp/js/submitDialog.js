@@ -19,7 +19,7 @@
  * @module dialog-box
  */
 
-YUI.add('submit-dialog', function (Y) {
+YUI.add('submit-dialog', function(Y) {
     YUI.namespace('com.imaginea.mongoV');
     var MV = YUI.com.imaginea.mongoV;
 
@@ -33,11 +33,17 @@ YUI.add('submit-dialog', function (Y) {
         function addCollection() {
             Y.log("Submit handler for add collection called", "info");
             var newCollInfo = this.getData();
-            if (newCollInfo.name === "") {
-                MV.showAlertMessage("Enter the collection name!", MV.warnIcon);
+            if (newCollInfo.newCollName === "") {
+                MV.showAlertMessage("Name should be entered to create a Collection!", MV.warnIcon);
+                return false;
+            } else if (newCollInfo.isCapped === true && newCollInfo.capSize === "") {
+                MV.showAlertMessage("Size should be entered to create a Capped Collection!", MV.warnIcon);
                 return false;
             } else {
-                Y.one("#newName").set("value", newCollInfo.name);
+                var updateColl = Y.one("#updateColl").get("value");
+                if (updateColl === "false") {
+                    Y.one("#currentColl").set("value", newCollInfo.newCollName);
+                }
                 Y.one("#" + form + " .bd form").setAttribute("action", MV.URLMap.insertColl());
             }
             return true;
@@ -110,49 +116,49 @@ YUI.add('submit-dialog', function (Y) {
         }
 
         var sumbitHandlerMap = {
-            "addColDialogSubmitHandler":addCollection,
-            "addGridFSDialogSubmitHandler":addGridFS,
-            "addDBDialogSubmitHandler":addDB,
-            "addDocDialogSubmitHandler":addDocument,
-            "addUserDialogSubmitHandler":addUser,
-            "addIndexDialogSubmitHandler":addIndex
+            "addColDialogSubmitHandler": addCollection,
+            "addGridFSDialogSubmitHandler": addGridFS,
+            "addDBDialogSubmitHandler": addDB,
+            "addDocDialogSubmitHandler": addDocument,
+            "addUserDialogSubmitHandler": addUser,
+            "addIndexDialogSubmitHandler": addIndex
         };
 
         var dialogBox = $("#" + form).data("dialogBox");
         if (!dialogBox) {
             dialogBox = new YAHOO.widget.Dialog(form, {
-                width:"25em",
-                fixedcenter:true,
-                visible:false,
-                draggable:true,
-                zIndex:2000,
-                effect:{
-                    effect:YAHOO.widget.ContainerEffect.SLIDE,
-                    duration:0.25
+                width: "25em",
+                fixedcenter: true,
+                visible: false,
+                draggable: true,
+                zIndex: 2000,
+                effect: {
+                    effect: YAHOO.widget.ContainerEffect.SLIDE,
+                    duration: 0.25
                 },
-                constraintoviewport:true,
-                buttons:[
+                constraintoviewport: true,
+                buttons: [
                     {
-                        text:"Submit",
-                        handler:function () {
+                        text: "Submit",
+                        handler: function() {
                             var doSubmit = (sumbitHandlerMap[form + "SubmitHandler"]).call(this);
                             if (doSubmit) {
                                 this.submit();
                             }
                         },
-                        isDefault:true
+                        isDefault: true
                     },
                     {
-                        text:"Cancel",
-                        handler:cancelCurrent
+                        text: "Cancel",
+                        handler: cancelCurrent
                     }
                 ]
             });
             dialogBox.callback = {
-                success:successHandler,
-                failure:failureHandler
+                success: successHandler,
+                failure: failureHandler
             };
-            dialogBox.beforeSubmitEvent.subscribe(function () {
+            dialogBox.beforeSubmitEvent.subscribe(function() {
                 (sumbitHandlerMap[form + "SubmitHandler"]).call(this);
             });
             dialogBox.render();
@@ -161,6 +167,21 @@ YUI.add('submit-dialog', function (Y) {
         dialogBox.show();
         return dialogBox;
     };
+
+    function updateCappedSection(event) {
+        var isChecked = event.currentTarget._node.checked;
+        if (isChecked) {
+            $("#cappedSection").removeClass('disabled');
+            $("#cappedSection input").removeAttr('disabled');
+        } else {
+            $("#cappedSection").addClass('disabled');
+            $("#cappedSection input").attr('disabled', 'disabled');
+        }
+    }
+
+    // Add change listener to capped checkbox in Add Collection Dialog
+    Y.delegate("click", updateCappedSection, "#addColDialog", "input[name = isCapped]");
+
 }, '3.3.0', {
-    requires:["utility", "node", "alert-dialog"]
+    requires: ["utility", "node", "alert-dialog"]
 });

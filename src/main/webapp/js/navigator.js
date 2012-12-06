@@ -21,11 +21,11 @@
         function addChildren(node, regionManager) {
             node.all('* input, * ul li, * textarea, * button, * select, * a').each(
 
-            function(item) {
-                if (!item.hasClass('non-navigable')) {
-                    regionManager.add(item);
-                }
-            });
+                function(item) {
+                    if (!item.hasClass('non-navigable')) {
+                        regionManager.add(item);
+                    }
+                });
         }
 
         Navigator.prototype = {
@@ -108,11 +108,14 @@
                 };
                 var findParentTR = function() {
                     var relevantParent = null;
-                    var trSelectionClass = 'selected';
                     if (document.activeElement) {
                         var yNode = Y.one(document.activeElement);
                         if (yNode.hasClass('non-navigable')) {
-                            relevantParent = findParent(yNode, '.docDiv');
+                            relevantParent = findParent(yNode, 'tr');
+                            // in case the tr contains a save button, skip
+                            if (relevantParent.one("* .savebtn") !== null) {
+                                relevantParent = null;
+                            }
                         }
                     }
                     return relevantParent;
@@ -122,35 +125,14 @@
                     var parentTR = null;
                     var effectTR = null;
                     switch (eventObject.keyCode) {
-                    case arrowKeys.down:
-                        parentTR = findParentTR();
-                        effectTR = (parentTR) ? parentTR.next(): null;
-                        if(sm.currentColl() == MV.indexes){
-                            while(parentTR.next()){
-                                effectTR = null;
-                                if(parentTR.next().one('button.deletebtn')){
-                                    effectTR = parentTR.next();
-                                    break;
-                                }
-                                parentTR = parentTR.next();
-                            }
-                        }
-
-                        break;
-                    case arrowKeys.up:
-                        parentTR = findParentTR();
-                        effectTR = (parentTR) ? parentTR.previous() : null;
-                        if(sm.currentColl() == MV.indexes){
-                            while(parentTR.previous()){
-                                effectTR = null;
-                                if(parentTR.previous().one('button.deletebtn')){
-                                    effectTR = parentTR.previous();
-                                    break;
-                                }
-                                parentTR = parentTR.previous();
-                            }
-                        }
-                        break;
+                        case arrowKeys.down:
+                            parentTR = findParentTR();
+                            effectTR = (parentTR) ? parentTR.next() : null;
+                            break;
+                        case arrowKeys.up:
+                            parentTR = findParentTR();
+                            effectTR = (parentTR) ? parentTR.previous() : null;
+                            break;
                     }
                     if (effectTR) {
                         sm.recordLastArrowNavigation();
@@ -176,7 +158,7 @@
                         }
                     }
                 } else {
-	                self.clearStyles();
+                    self.clearStyles();
                 }
             },
             selectElement: function(self) {
@@ -189,7 +171,7 @@
                     } else if ('DIV' === selectedNodeName) {
                         var firstChild = null;
                         if (selectedElement.hasClass('navigateTable')) {
-                            firstChild = selectedElement.one('* div');
+                            firstChild = selectedElement.one('* tr');
                             if (firstChild) {
                                 firstChild.simulate('click');
                             }
@@ -202,9 +184,9 @@
                             }
                         }
                     } else if ('SELECT' === selectedNodeName) {
-	                    selectedElement.simulate('mousedown');
+                        selectedElement.simulate('mousedown');
                     } else {
-	                    selectedElement.simulate('click');
+                        selectedElement.simulate('click');
                     }
                 }
             },

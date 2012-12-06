@@ -18,34 +18,32 @@
  * Contains all the operations that are related to users & indexes
  */
 YUI({
-    filter:'raw'
-}).use("loading-panel", "yes-no-dialog", "alert-dialog", "io-base", "json-parse", "node-event-simulate", "node", "event-delegate", "stylize", "json-stringify", "utility", "treeble-paginator", "event-key", "event-focus", "node-focusmanager", function (Y) {
+    filter: 'raw'
+}).use("loading-panel", "yes-no-dialog", "alert-dialog", "io-base", "json-parse", "node-event-simulate", "node", "event-delegate", "json-stringify", "utility", "treeble-paginator", "event-key", "event-focus", "node-focusmanager", function(Y) {
         YUI.namespace('com.imaginea.mongoV');
         var MV = YUI.com.imaginea.mongoV,
             sm = MV.StateManager;
         MV.treebleData = {};
         var tabView = new YAHOO.widget.TabView();
         tabView.addTab(new YAHOO.widget.Tab({
-            label:'JSON',
-            cacheData:true,
-            active:true
+            label: 'JSON',
+            cacheData: true,
+            active: true
         }));
         tabView.addTab(new YAHOO.widget.Tab({
-            label:'Tree Table',
-            content:' <div id="treeTable"></div><div id="table-pagination"></div> '
+            label: 'Tree Table',
+            content: ' <div id="treeTable"></div><div id="table-pagination"></div> '
         }));
         var actionMap = {
-            save:"save",
-            edit:"edit"
+            save: "save",
+            edit: "edit"
         };
 
         var idMap = {};
 
-        var initQueryBox = function (event) {
+        var initQueryBox = function(event) {
             Y.one("#currentColl").set("value", event.currentTarget.getAttribute("label"));
-            MV.toggleClass(event.currentTarget, Y.all("#collNames li"));
-            MV.toggleClass(event.currentTarget, Y.all("#bucketNames li"));
-            MV.toggleClass(event.currentTarget, Y.all("#systemCollections li"));
+            MV.selectDBItem(event.currentTarget);
             MV.loadQueryBox(MV.URLMap.getDocKeys(), MV.URLMap.getDocs(), sm.currentColl(), showTabView);
         };
 
@@ -54,7 +52,7 @@ YUI({
          * @param {object} e It is an event object
          *
          */
-        var showTabView = function (response) {
+        var showTabView = function(response) {
             MV.deleteDocEvent.unsubscribeAll();
             MV.deleteDocEvent.subscribe(deleteUserOrIndex);
 
@@ -73,7 +71,7 @@ YUI({
                 //If we are showing indexes then no need to show edit
                 populateJSONTab(response);
                 if (sm.currentColl() == MV.indexes) {
-                    $('.editbtn').each(function () {
+                    $('.editbtn').each(function() {
                         $(this).css('visibility', 'hidden');
                     });
                 }
@@ -93,7 +91,7 @@ YUI({
          */
         function populateJSONTab(response) {
             var jsonView = "<div class='buffer jsonBuffer navigable navigateTable' id='jsonBuffer'>";
-            var template=[
+            var template = [
                 "<div id='doc[0]'class='docDiv'>",
                 "<div class='textAreaDiv'><pre><textarea id='ta[1]' class='disabled non-navigable' disabled='disabled' cols='74'>[2]</textarea></pre></div>",
                 "<div class='actionsDiv'>",
@@ -105,9 +103,9 @@ YUI({
                 "</div>"
             ].join('\n');
 
-            var nonEditableTemplate=[
-                "<div id='doc[0]' class='docDiv' style='display: inline-block;width:99%;position: relative;'>",
-                "<div class='textAreaDiv' style='display: inline; float: left; width: 98%;padding: 10px;'><pre> <textarea id='ta[1]' class='disabled non-navigable' disabled='disabled' cols='74' style='width: 99%'>[2]</textarea></pre></div>",
+            var nonEditableTemplate = [
+                "<div id='doc[0]' style='display: inline-block;width:99%;position: relative;'>",
+                "<div style='display: inline; float: left; width: 98%;padding: 10px;'><pre> <textarea id='ta[1]' class='disabled non-navigable' disabled='disabled' cols='74' style='width: 99%'>[2]</textarea></pre></div>",
                 "<div style='display: inline; float: left;left:85%;position: absolute;top: 15%;'>",
                 "</div>",
                 "</div>"
@@ -133,12 +131,12 @@ YUI({
 
             jsonView = jsonView + "</tbody></table></div>";
             tabView.getTab(0).setAttributes({
-                content:jsonView
+                content: jsonView
             }, false);
             for (i = 0; i < documents.length; i++) {
                 Y.on("click", editUser, "#edit" + i);
-                Y.on("click", function (e) {
-                    MV.deleteDocEvent.fire({eventObj:e});
+                Y.on("click", function(e) {
+                    MV.deleteDocEvent.fire({eventObj: e});
                 }, "#delete" + i);
                 Y.on("click", saveDoc, "#save" + i);
                 Y.on("click", cancelSave, "#cancel" + i);
@@ -148,49 +146,40 @@ YUI({
             }
             var trSelectionClass = 'selected';
             // add click listener to select and deselect rows.
-            Y.all('.docDiv').on("click", function(eventObject) {
+            Y.all('.jsonTable tr').on("click", function(eventObject) {
                 var currentTR = eventObject.currentTarget;
-                var alreadySelected =  currentTR.one('.textAreaDiv textarea').hasClass(trSelectionClass);
+                var alreadySelected = currentTR.hasClass(trSelectionClass);
 
-                Y.all('.docDiv').each(function(item) {
-                    item.removeClass(trSelectionClass);
-                });
-
-                Y.all('.textAreaDiv textarea').each(function(item) {
+                Y.all('.jsonTable tr').each(function(item) {
                     item.removeClass(trSelectionClass);
                 });
 
                 if (!alreadySelected) {
+                    currentTR.addClass(trSelectionClass);
                     var editBtn = currentTR.one('button.editbtn');
-                    var deleteBtn = currentTR.one('button.deletebtn');
                     if (editBtn) {
-                        currentTR.one('.textAreaDiv textarea').addClass(trSelectionClass);
                         editBtn.focus();
-                    }
-                    if (sm.currentColl() == MV.indexes && deleteBtn){
-                        currentTR.one('.textAreaDiv textarea').addClass(trSelectionClass);
-                        deleteBtn.focus();
                     }
                 }
             });
-            Y.on('blur', function (eventObject) {
+            Y.on('blur', function(eventObject) {
                 var resetAll = true;
                 // FIXME ugly hack for avoiding blur when scroll happens
                 if (sm.isNavigationSideEffect()) {
                     resetAll = false;
                 }
                 if (resetAll) {
-                    Y.all('tr.selected').each(function (item) {
+                    Y.all('tr.selected').each(function(item) {
                         item.removeClass(trSelectionClass);
                     });
                 }
             }, 'div.jsonBuffer');
 
-            Y.on('keyup', function (eventObject) {
+            Y.on('keyup', function(eventObject) {
                 var firstItem;
                 // escape edit mode
                 if (eventObject.keyCode === 27) {
-                    Y.all("button.savebtn").each(function (item) {
+                    Y.all("button.savebtn").each(function(item) {
                         toggleSaveEdit(item, getButtonIndex(item), actionMap.save);
                         if (!(firstItem)) {
                             firstItem = item;
@@ -235,7 +224,7 @@ YUI({
         function deleteUserOrIndex(type, args) {
             var btnIndex;
             var collname = sm.currentColl();
-            var sendDeleteDocRequest = function () {
+            var sendDeleteDocRequest = function() {
                 var targetNode = args[0].eventObj.currentTarget;
                 var index = getButtonIndex(targetNode);
                 var doc = Y.one('#doc' + index).one("pre").one("textarea").get("value");
@@ -249,10 +238,10 @@ YUI({
                     var request = Y.io(MV.URLMap.removeUser(),
                         // configuration for dropping the document
                         {
-                            method:"POST",
-                            data:"username=" + username,
-                            on:{
-                                success:function (ioId, responseObj) {
+                            method: "POST",
+                            data: "username=" + username,
+                            on: {
+                                success: function(ioId, responseObj) {
                                     var parsedResponse = Y.JSON.parse(responseObj.responseText);
                                     var response = parsedResponse.response.result;
                                     if (response !== undefined) {
@@ -266,7 +255,7 @@ YUI({
                                         Y.log("Could not delete the user with username =  [0], Error message: [1], Error Code: [2]".format(username, error.message, error.code), "error");
                                     }
                                 },
-                                failure:function (ioId, responseObj) {
+                                failure: function(ioId, responseObj) {
                                     Y.log("Could not delete the user Status text: ".format(Y.one("#currentColl").get("value"), responseObj.statusText), "error");
                                     MV.showAlertMessage("Could not delete the user! Please check if your app server is running and try again. Status Text: [1]".format(responseObj.statusText), MV.warnIcon);
                                 }
@@ -283,10 +272,10 @@ YUI({
                     var request = Y.io(MV.URLMap.dropIndex(),
                         // configuration for dropping the Index
                         {
-                            method:"POST",
-                            data:"nameSpace=" + nameSpace + "&indexName=" + indexName,
-                            on:{
-                                success:function (ioId, responseObj) {
+                            method: "POST",
+                            data: "nameSpace=" + nameSpace + "&indexName=" + indexName,
+                            on: {
+                                success: function(ioId, responseObj) {
                                     var parsedResponse = Y.JSON.parse(responseObj.responseText);
                                     var response = parsedResponse.response.result;
                                     if (response !== undefined) {
@@ -300,7 +289,7 @@ YUI({
                                         Y.log("Could not delete the index with Index name =  [0], Error message: [1], Error Code: [2]".format(indexName, error.message, error.code), "error");
                                     }
                                 },
-                                failure:function (ioId, responseObj) {
+                                failure: function(ioId, responseObj) {
                                     Y.log("Could not delete the index Status text: ".format(Y.one("#currentColl").get("value"), responseObj.statusText), "error");
                                     MV.showAlertMessage("Could not delete the index! Please check if your app server is running and try again. Status Text: [1]".format(responseObj.statusText), MV.warnIcon);
                                 }
@@ -319,12 +308,13 @@ YUI({
                 else if (collname == MV.indexes) {
                     alertmsg = alertmsg.concat("index ?");
                 }
-                MV.showYesNoDialog(alertmsg, sendDeleteDocRequest, function () {
+                MV.showYesNoDialog(alertmsg, sendDeleteDocRequest, function() {
                     this.hide();
                 });
             } else {
                 //get the sibling save/edit bttn and toggle using that
                 btnIndex = getButtonIndex(args[0].eventObj.currentTarget);
+                toggleSaveEdit(Y.one('#delete' + btnIndex).get('parentNode').one('button'), btnIndex, actionMap.save);
             }
         }
 
@@ -410,7 +400,7 @@ YUI({
                 switch (index) {
                     //Add User
                     case 1:
-                        var showError = function (responseObject) {
+                        var showError = function(responseObject) {
                             MV.showAlertMessage("Adding user failed! Please check if your app server is running and then refresh the page.", MV.warnIcon);
                             Y.log("Add user failed. Response Status: [0]".format(responseObject.statusText), "error");
                         };
@@ -428,7 +418,7 @@ YUI({
                         break;
                     case 2:
                         // Drop All the users present in the database
-                        MV.showYesNoDialog("Do you want to drop all the users ?", dropUsers, function () {
+                        MV.showYesNoDialog("Do you want to drop all the users ?", dropUsers, function() {
                             this.hide();
                         });
                         break;
@@ -439,14 +429,14 @@ YUI({
                 //AddIndex
                 switch (index) {
                     case 1:
-                        var showError = function (responseObject) {
+                        var showError = function(responseObject) {
                             MV.showAlertMessage("Adding Index failed! Please check if your app server is running and then refresh the page.", MV.warnIcon);
                             Y.log("Add Index failed. Response Status: [0]".format(responseObject.statusText), "error");
                         };
                         MV.showSubmitDialog("addIndexDialog", addIndex, showError);
                         break;
                     case 2:
-                        MV.showYesNoDialog("Do you want to drop Indexes on all the collections ?", dropAllIndexes, function () {
+                        MV.showYesNoDialog("Do you want to drop Indexes on all the collections ?", dropAllIndexes, function() {
                             this.hide();
                         });
                         break;
@@ -468,9 +458,9 @@ YUI({
             var request = Y.io(MV.URLMap.removeAllUsers(),
                 // configuration for dropping the users
                 {
-                    method:"POST",
-                    on:{
-                        success:function (ioId, responseObj) {
+                    method: "POST",
+                    on: {
+                        success: function(ioId, responseObj) {
                             var parsedResponse = Y.JSON.parse(responseObj.responseText),
                                 response = parsedResponse.response.result,
                                 error;
@@ -485,7 +475,7 @@ YUI({
                                 Y.log("Could not drop [0], Error message: [1], Error Code: [2]".format(Y.one("#currentColl").get("value"), error.message, error.code), "error");
                             }
                         },
-                        failure:function (ioId, responseObj) {
+                        failure: function(ioId, responseObj) {
                             Y.log("Could not drop [0].Status text: ".format(Y.one("#currentColl").get("value"), responseObj.statusText), "error");
                             MV.showAlertMessage("Could not drop [0]!  Please check if your app server is running and try again. Status Text: [1]".format(Y.one("#currentColl").get("value"), responseObj.statusText), MV.warnIcon);
                         }
@@ -506,9 +496,9 @@ YUI({
             var request = Y.io(MV.URLMap.dropAllIndexes(),
                 // configuration for dropping the indexes
                 {
-                    method:"POST",
-                    on:{
-                        success:function (ioId, responseObj) {
+                    method: "POST",
+                    on: {
+                        success: function(ioId, responseObj) {
                             var parsedResponse = Y.JSON.parse(responseObj.responseText),
                                 response = parsedResponse.response.result,
                                 error;
@@ -523,7 +513,7 @@ YUI({
                                 Y.log("Could not drop [0], Error message: [1], Error Code: [2]".format(Y.one("#currentColl").get("value"), error.message, error.code), "error");
                             }
                         },
-                        failure:function (ioId, responseObj) {
+                        failure: function(ioId, responseObj) {
                             Y.log("Could not drop [0].Status text: ".format(Y.one("#currentColl").get("value"), responseObj.statusText), "error");
                             MV.showAlertMessage("Could not drop [0]!  Please check if your app server is running and try again. Status Text: [1]".format(Y.one("#currentColl").get("value"), responseObj.statusText), MV.warnIcon);
                         }

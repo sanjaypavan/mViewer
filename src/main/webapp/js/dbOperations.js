@@ -236,8 +236,8 @@ YUI({
          */
         function requestConnectionDetails(response, a, b, c) {
             var parsedResponse = (response != undefined && response.responseText != undefined) ? Y.JSON.parse(response.responseText) : null;
-            var error = parsedResponse === undefined ? undefined : parsedResponse.response.error;
-            var result = parsedResponse === undefined ? undefined : parsedResponse.response.result;
+            var error = parsedResponse == undefined ? undefined : parsedResponse.response.error;
+            var result = parsedResponse == undefined ? undefined : parsedResponse.response.result;
             if(result) {
                 MV.showAlertMessage(result,MV.infoIcon);
             }

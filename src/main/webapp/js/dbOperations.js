@@ -236,7 +236,11 @@ YUI({
          */
         function requestConnectionDetails(response, a, b, c) {
             var parsedResponse = (response != undefined && response.responseText != undefined) ? Y.JSON.parse(response.responseText) : null;
-            var error = parsedResponse == undefined ? undefined : parsedResponse.response.error;
+            var error = parsedResponse === undefined ? undefined : parsedResponse.response.error;
+            var result = parsedResponse === undefined ? undefined : parsedResponse.response.result;
+            if(result) {
+                MV.showAlertMessage(result,MV.infoIcon);
+            }
             if (error) {
                 MV.showAlertMessage("DB creation failed ! [0].".format(error.message), MV.warnIcon);
                 Y.log("DB creation failed. Response Status: [0]".format(error.message), "error");

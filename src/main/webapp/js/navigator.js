@@ -29,7 +29,7 @@
         }
 
         Navigator.prototype = {
-            init: function() {
+            init: function () {
                 Y.log("About to init the navigator", "debug");
                 var selectorString = this.selectorString;
                 var self = this;
@@ -38,7 +38,7 @@
                     self.add(item);
                 });
             },
-            add: function(section) {
+            add: function (section) {
                 var regionId = section.get('id');
                 if (regionId && regionId.length > 0) {
                     this.regions[this.regions.length] = section;
@@ -53,13 +53,13 @@
                 Y.one(caSelector + ' input').set('value', '');
                 Y.one(caSelector).show();
                 Y.one(caSelector + ' input').focus();
-                Y.all('div.buffer').each(function(item) {
+                Y.all('div.buffer').each(function (item) {
                     item.addClass('hint');
                 });
             },
             hideCommandBar: function(type, args) {
                 Y.one('.floatingFooter').hide();
-                Y.all('.shadow').each(function(item) {
+                Y.all('.shadow').each(function (item) {
                     item.removeClass('shadow');
                     item.removeClass('simulatedHover');
                 });
@@ -67,7 +67,7 @@
                     item.removeClass('hint');
                 });
             },
-            _bindKeysYUI: function() {
+            _bindKeysYUI: function () {
                 // TODO instead of keylistener use event listener
                 var self = this;
                 var spaceListener = new YAHOO.util.KeyListener(document, {
@@ -92,56 +92,81 @@
                 });
                 this._addArrowKeyNavigation();
             },
-            _addArrowKeyNavigation: function() {
+            _addArrowKeyNavigation: function () {
                 var arrowKeys = {
                     left: 37,
                     up: 38,
                     right: 39,
                     down: 40
                 };
-                var findParent = function(yNode, selector) {
-                    var parentNode = yNode;
+                var findParent = function (jNode, selector) {
+                    var parentNode = jNode;
                     do {
-                        parentNode = parentNode.get('parentNode');
-                    } while (parentNode && parentNode.test(selector) === false);
+                        parentNode = parentNode.parent();
+                    } while (parentNode && parentNode.is(selector) === false);
                     return parentNode;
                 };
-                var findParentTR = function() {
-                    var relevantParent = null;
+                var findParentDiv = function() {
+                    var relevantParent = null, jNode;
                     if (document.activeElement) {
-                        var yNode = Y.one(document.activeElement);
-                        if (yNode.hasClass('non-navigable')) {
-                            relevantParent = findParent(yNode, 'tr');
-                            // in case the tr contains a save button, skip
-                            if (relevantParent.one("* .savebtn") !== null) {
-                                relevantParent = null;
-                            }
+                        jNode = $(document.activeElement);
+                        if (jNode.hasClass('non-navigable')) {
+                            relevantParent = findParent(jNode, '.docDiv');
                         }
                     }
                     return relevantParent;
                 };
 
-                Y.on("keydown", function(eventObject) {
-                    var parentTR = null;
-                    var effectTR = null;
+                var findNextDeleteableIndex = function (parentDiv) {
+                    var effectDiv = null;
+                    while (parentDiv.next().is('div')) {
+                        if (parentDiv.next().find('button.deletebtn').length) {
+                            effectDiv = parentDiv.next();
+                            break;
+                        }
+                        parentDiv = parentDiv.next();
+                    }
+                    return effectDiv;
+
+                };
+                var findPreviousDeleteableIndex = function(parentDiv) {
+                    var effectDiv = null;
+                    while (parentDiv.prev().is('div')) {
+                        if (parentDiv.prev().find('button.deletebtn').length) {
+                            effectDiv = parentDiv.prev();
+                            break;
+                        }
+                        parentDiv = parentDiv.prev();
+                    }
+                    return effectDiv;
+                };
+
+                $(document).keydown(function (eventObject) {
+                    var parentDiv = null, effectDiv = null;
                     switch (eventObject.keyCode) {
                         case arrowKeys.down:
-                            parentTR = findParentTR();
-                            effectTR = (parentTR) ? parentTR.next() : null;
+                            parentDiv = findParentDiv();
+                            effectDiv = (parentDiv) ? parentDiv.next() : null;
+                            if (sm.currentColl() === MV.indexes) {
+                                effectDiv =  findNextDeleteableIndex(parentDiv);
+                            }
                             break;
                         case arrowKeys.up:
-                            parentTR = findParentTR();
-                            effectTR = (parentTR) ? parentTR.previous() : null;
+                            parentDiv = findParentDiv();
+                            effectDiv = (parentDiv) ? parentDiv.prev() : null;
+                            if (sm.currentColl() === MV.indexes) {
+                                effectDiv = findPreviousDeleteableIndex(parentDiv);
+                            }
                             break;
                     }
-                    if (effectTR) {
+                    if (effectDiv) {
                         sm.recordLastArrowNavigation();
-                        effectTR.simulate('click');
+                        effectDiv.click();
                     }
 
-                }, document);
+                });
             },
-            highlight: function(self) {
+            highlight: function (self) {
                 var regionName = Y.one('.assistText').get('value').trim();
                 if (regionName && regionName.length > 0) {
                     self.clearStyles();
@@ -171,7 +196,7 @@
                     } else if ('DIV' === selectedNodeName) {
                         var firstChild = null;
                         if (selectedElement.hasClass('navigateTable')) {
-                            firstChild = selectedElement.one('* tr');
+                            firstChild = selectedElement.one('* div');
                             if (firstChild) {
                                 firstChild.simulate('click');
                             }

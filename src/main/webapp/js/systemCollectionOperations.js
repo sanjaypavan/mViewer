@@ -93,13 +93,13 @@ YUI({
             var jsonView = "<div class='buffer jsonBuffer navigable navigateTable' id='jsonBuffer'>";
             var template = [
                 "<div id='doc[0]'class='docDiv'>",
-                "<div class='textAreaDiv'><pre><textarea id='ta[1]' class='disabled non-navigable' disabled='disabled' cols='74'>[2]</textarea></pre></div>",
+                "<div class='textAreaDiv non-navigable'><pre><textarea id='ta[1]' class='disabled non-navigable' disabled='disabled' cols='74'>[2]</textarea></pre></div>",
                 "<div class='actionsDiv'>",
                 "<button id='edit[3]'class='bttn editbtn non-navigable'>edit</button>",
                 "<button id='delete[4]'class='bttn deletebtn non-navigable'>delete</button>",
                 "<button id='save[5]'class='bttn savebtn non-navigable invisible'>save</button>",
                 "<button id='cancel[6]'class='bttn cancelbtn non-navigable invisible'>cancel</button>",
-                "</div>" ,
+                "</div>",
                 "</div>"
             ].join('\n');
 
@@ -146,19 +146,24 @@ YUI({
             }
             var trSelectionClass = 'selected';
             // add click listener to select and deselect rows.
-            Y.all('.jsonTable tr').on("click", function(eventObject) {
-                var currentTR = eventObject.currentTarget;
-                var alreadySelected = currentTR.hasClass(trSelectionClass);
+            $('.docDiv').click(function() {
+                var $this = $(this);
+                var alreadySelected = $this.find('.textAreaDiv textarea:first').hasClass(trSelectionClass);
 
-                Y.all('.jsonTable tr').each(function(item) {
-                    item.removeClass(trSelectionClass);
+                // Remove the selection on previously selected users/indexes div
+                $('.textAreaDiv textarea').each(function(item) {
+                    $(this).removeClass(trSelectionClass);
                 });
-
                 if (!alreadySelected) {
-                    currentTR.addClass(trSelectionClass);
-                    var editBtn = currentTR.one('button.editbtn');
+                    $this.find('.textAreaDiv textarea:first').addClass(trSelectionClass);
+                    var editBtn = $this.find('button.editbtn:first');
+                    var deleteBtn = $this.find('button.deletebtn:first');
                     if (editBtn) {
                         editBtn.focus();
+                    }
+                    //If the clicked div belongs to indexes then focus on the delete button.
+                    if (sm.currentColl() === MV.indexes && deleteBtn) {
+                        deleteBtn.focus();
                     }
                 }
             });

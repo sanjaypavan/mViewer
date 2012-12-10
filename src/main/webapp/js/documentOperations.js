@@ -86,7 +86,7 @@ YUI({
             var jsonView = "<div class='buffer jsonBuffer navigable navigateTable' id='jsonBuffer'>";
             var trTemplate = [
                 "<div class='docDiv' id='doc[0]'>",
-                "<div class='textAreaDiv'><pre><textarea id='ta[1]' class='non-navigable' disabled='disabled' cols='74'>[2]</textarea></pre></div>",
+                "<div class='textAreaDiv non-navigable'><pre><textarea id='ta[1]' class='non-navigable' disabled='disabled' cols='74'>[2]</textarea></pre></div>",
                 "</div>"
             ];
 
@@ -96,7 +96,7 @@ YUI({
                     "<button id='delete[4]'class='bttn deletebtn non-navigable'>delete</button>",
                     "<button id='save[5]'class='bttn savebtn non-navigable invisible'>save</button>",
                     "<button id='cancel[6]'class='bttn cancelbtn non-navigable invisible'>cancel</button>",
-                    "</div>")
+                    "</div>");
             }
             trTemplate = trTemplate.join('\n');
             jsonView += "<table class='jsonTable'><tbody>";
@@ -125,19 +125,23 @@ YUI({
             }
             var trSelectionClass = 'selected';
             // add click listener to select and deselect rows.
-            Y.all('.jsonTable tr').on("click", function(eventObject) {
-                var currentTR = eventObject.currentTarget;
-                var alreadySelected = currentTR.hasClass(trSelectionClass);
+            $('.docDiv').click(function() {
+                var $this = $(this);
+                var alreadySelected = $this.find('.textAreaDiv textarea:first').hasClass(trSelectionClass);
 
-                Y.all('.jsonTable tr').each(function(item) {
-                    item.removeClass(trSelectionClass);
+            // Remove the selection on previously selected document div
+                $('.textAreaDiv textarea').each(function(item) {
+                    $(this).removeClass(trSelectionClass);
                 });
-
                 if (!alreadySelected) {
-                    currentTR.addClass(trSelectionClass);
-                    var editBtn = currentTR.one('button.editbtn');
+                    $this.find('.textAreaDiv textarea:first').addClass(trSelectionClass);
+                    var editBtn = $this.find('button.editbtn:first');
+                    var saveBtn = $this.find('button.savebtn:first');
                     if (editBtn) {
                         editBtn.focus();
+                    }
+                    if(saveBtn){
+                        saveBtn.focus();
                     }
                 }
             });
@@ -148,7 +152,7 @@ YUI({
                     resetAll = false;
                 }
                 if (resetAll) {
-                    Y.all('tr.selected').each(function(item) {
+                    Y.all('div.selected').each(function(item) {
                         item.removeClass(trSelectionClass);
                     });
                 }

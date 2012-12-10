@@ -76,12 +76,12 @@ YUI({
             var jsonView = "<div class='buffer jsonBuffer navigable navigateTable' id='jsonBuffer'>";
 
             var trTemplate = ["<div id='file[0]' class='docDiv'>",
-                "<div class='textAreaDiv'><pre> <textarea id='ta[1]' class='disabled non-navigable' disabled='disabled' cols='75'>[2]</textarea></pre></div>",
+                "<div class='textAreaDiv non-navigable'><pre> <textarea id='ta[1]' class='disabled non-navigable' disabled='disabled' cols='75'>[2]</textarea></pre></div>",
                 "<div class='actionsDiv'>",
                 "  <button id='open[3]'class='bttn openbtn non-navigable'>open</button>",
                 "  <button id='download[4]'class='bttn downloadbtn non-navigable'>download</button>",
                 "  <button id='delete[5]'class='bttn deletebtn non-navigable'>delete</button>",
-                "</div>" ,
+                "</div>",
                 "</div>"
             ].join('\n');
             jsonView += "<table class='jsonTable'><tbody>";
@@ -113,22 +113,24 @@ YUI({
             }
             var trSelectionClass = 'selected';
             // add click listener to select and deselect rows.
-            Y.all('.jsonTable tr').on("click", function(eventObject) {
-                var currentTR = eventObject.currentTarget;
-                var alreadySelected = currentTR.hasClass(trSelectionClass);
 
-                Y.all('.jsonTable tr').each(function(item) {
-                    item.removeClass(trSelectionClass);
+            $('.docDiv').click(function() {
+                var $this = $(this);
+                var alreadySelected = $this.find('.textAreaDiv textarea:first').hasClass(trSelectionClass);
+
+                // Remove the selection on previously selected file div
+                $('.textAreaDiv textarea').each(function(item) {
+                    $(this).removeClass(trSelectionClass);
                 });
-
                 if (!alreadySelected) {
-                    currentTR.addClass(trSelectionClass);
-                    var openBtn = currentTR.one('button.openbtn');
+                    $this.find('.textAreaDiv textarea:first').addClass(trSelectionClass);
+                    var openBtn = $this.find('button.openbtn:first');
                     if (openBtn) {
                         openBtn.focus();
                     }
                 }
             });
+
             Y.on('blur', function(eventObject) {
                 var resetAll = true;
                 // FIXME ugly hack for avoiding blur when scroll happens
